@@ -1,0 +1,5 @@
+pandas
+numpy
+pygame
+ta-lib
+matplotlib
