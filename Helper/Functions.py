@@ -5,6 +5,7 @@ def screen_scale(y:float) -> int:
     assert(y >= 0.0 and y <= 1.0), 'val should be between [0-1]'
     return round(y * USEABLE_Y_SCREEN)
 
+#TODO: rename this to something more useful
 def ss(y:float) -> int:
     """ Return a scaled and off-setted screen based on DISPLAY_Y_GAP,
         Translate the point to exact location. """
