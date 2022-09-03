@@ -3,3 +3,4 @@ numpy
 pygame
 ta-lib
 matplotlib
+pytest

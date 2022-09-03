@@ -1,7 +1,6 @@
 import pandas as pd
 from .Candlestick import Candle
 import pygame
-import time
 from Helper import *
 
 class CandleSticks(DrawBase):
