@@ -1,6 +1,6 @@
 pandas
 numpy
 pygame
-ta-lib
+# ta-lib
 matplotlib
 pytest
