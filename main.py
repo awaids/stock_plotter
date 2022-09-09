@@ -19,18 +19,17 @@ def clear_display(surface:pygame.Surface) -> pygame.Surface:
 
 def main(simulate_live:bool=True) -> None:
     surface = setup_disply()
-    df = read_csv('Stocks_Data/BTCUSDT_1d.csv', normalize=True)
+    stockData = StockDataDF(read_csv('Stocks_Data/BTCUSDT_1d.csv'))
     if simulate_live:
-        for idx in range(1, df.shape[0]):
+        for live_df in stockData.live_generator():
             clear_display(surface)
-            live_df = df[:idx]
             CandleSticks(df=live_df).draw(parent_surface=surface)
             Stats(df=live_df).draw(parent_surface=surface)
             # Show display
             pygame.display.flip()
             time.sleep(0.05)
     else:
-        CandleSticks(df=df).draw(parent_surface=surface)
+        CandleSticks(df=stockData.df).draw(parent_surface=surface)
         pygame.display.flip()
 
 if __name__ == '__main__':
