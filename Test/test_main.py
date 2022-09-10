@@ -1,7 +1,4 @@
-import pytest
-from Helper import Functions
 from Helper import DataReader
-import pandas as pd
 import os
 TEST_CSV = os.path.join(os.path.dirname(__file__), 'BTCUSDT_1d.csv')
 

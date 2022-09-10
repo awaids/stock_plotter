@@ -2,6 +2,7 @@ import pygame
 from Helper import *
 from Candle import CandleSticks
 from Stats import Stats
+from Trader import CatTrader
 import time
 
 def setup_disply() -> pygame.Surface:
@@ -25,6 +26,7 @@ def main(simulate_live:bool=True) -> None:
             clear_display(surface)
             CandleSticks(df=live_df).draw(parent_surface=surface)
             Stats(df=live_df).draw(parent_surface=surface)
+            CatTrader().draw(parent_surface=surface)
             # Show display
             pygame.display.flip()
             time.sleep(0.05)
