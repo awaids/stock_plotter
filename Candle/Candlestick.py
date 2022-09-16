@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import pygame
 from pygame.locals import *
-from Helper import *
+from stock_plotter.Helper import *
 
 
 class _CandleBody():
@@ -57,7 +57,7 @@ class Candle():
         self.c = series['Close']
         self.h = series['High']
         self.l = series['Low']
-        self.datetime = series['CloseTime']
+        # self.datetime = series['CloseTime']
 
     def draw(self, parent_surface: pygame.Surface, x_pos: int) -> None:
         # print(f'Candle: {self.np_array}')

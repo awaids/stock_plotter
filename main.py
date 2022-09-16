@@ -5,19 +5,6 @@ from Stats import Stats
 from Trader import CatTrader
 import time
 
-def setup_disply() -> pygame.Surface:
-    pygame.init()
-    pygame.display.set_caption('Stock Plotter')
-    surface = pygame.display.set_mode((DISPLAY_X, DISPLAY_Y))
-    surface.fill(BOARD_BACKGROUND_COLOR)
-    # This is required for printing text
-    pygame.font.init()
-    return surface
-
-def clear_display(surface:pygame.Surface) -> pygame.Surface:
-    surface.fill(BOARD_BACKGROUND_COLOR)
-    return surface
-
 def main(simulate_live:bool=True) -> None:
     surface = setup_disply()
     stockData = StockDataDF(read_csv('Stocks_Data/BTCUSDT_1d.csv'))

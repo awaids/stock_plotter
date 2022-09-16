@@ -1,25 +1,17 @@
 import pygame
 from os.path import dirname, join
-from stock_plotter.Helper import DrawBase
+from typing import List, Tuple
 from stock_plotter.Helper import Action
+from stock_plotter.Helper.Contants import *
+from stock_plotter.Helper.Functions import ss
+from stock_plotter.Surface import StockSurface
 
 
-class CatTrader(DrawBase):
-    def __init__(self, starting_capital:float = 1000.0) -> None:
-        #TODO: figure out how to make the image here universal! -> needs pygame init
-        image = pygame.image.load(join(dirname(__file__), "TraderCat.png")).convert()
-        self.image = pygame.transform.scale(image, (50, 50))
-        # Used by reset to properly setup variables
-        self.initial_starting_capital = starting_capital
-        # Use the reset as intializing point for all the member variables
-        self.reset(self.initial_starting_capital)
-
-    def draw(self, parent_surface: pygame.Surface) -> pygame.Surface:
-        parent_surface.blit(self.image, (0,0))
-        return parent_surface
+class CatTrader():
+    size = 50
 
     def reset(self, starting_capital:float = 1000.0) -> None:
-      # Once this is false, this means that the trader is dead. We must not process this,
+        #NOTE: Once this is True, this means that the trader is dead. We must not process this,
         # however we can still draw the death statistics!
         self._isDead = False
         self._inTrade = False
@@ -32,8 +24,47 @@ class CatTrader(DrawBase):
         self._cum_losses = 0.0  # Cummulative loss done on all trades
         self._cum_profits = 0.0 # Cummulative Profit done on all trades
         self._holding = 0.0 # No. of coins being held
-
         self._buy_price = 0.0
+
+    def __init__(self, starting_capital:float = 1000.0, death_at:float = 0.75) -> None:
+        # These images can be made class global but they require that pygame be init and setup
+        self.alive_cat =  StockSurface.load_image(join(dirname(__file__), "cat.svg"), (self.size, self.size))
+        self.dead_cat =  StockSurface.load_image(join(dirname(__file__), "death.svg"), (self.size, self.size))
+        # Used by reset to properly setup variables
+        self.initial_starting_capital = starting_capital
+        self._death_at = self.initial_starting_capital * death_at 
+        # Use the reset as intializing point for all the member variables
+        self.reset(self.initial_starting_capital)
+
+    def draw(self, stockSurface:StockSurface, x_pos:int):
+        assert(x_pos >= 0), "x_pos must be positive"
+        y_pos = self._get_y_pos()
+        stockSurface.draw_vertical_line(x_pos=x_pos)
+        image = self.dead_cat if self.isDead else self.alive_cat
+        stockSurface.add_image(image=image, pos = (x_pos - self.size, y_pos))
+        # Add the stats 
+        stats = self._get_display_stats()
+        # Adding some pace between the line and stats
+        stockSurface.add_multline_text(lines=stats, pos = (x_pos + 1 , y_pos))
+
+    def _get_y_pos(self) -> int:
+        # The y-pos is determined by the starting capital and the current status of the trader
+        # We consider that the screen is 3 times the starting capital and the starting capital is 
+        # always 1/3
+        total_screen = 3 * self.initial_starting_capital
+        ratio = (self.current_value + self._unrealized_gains) /total_screen
+        return ss(max(min(ratio, 0.9), 0.1))
+
+    def _get_display_stats(self) -> List[Tuple[str, Tuple]]:
+        # we compute the stats here as a list of str that can be directly printed
+        #print unrealiuzed gains + trades made? -> this needs to be replicating the 
+        # input required by StockSurface.add_multiine_text()
+        color = GREEN if self._unrealized_gains > 0 else RED
+        return [
+            (f'Gains: {self._unrealized_gains:0.2f}', color),
+            (f'{self.current_value:0.2f}', WHITE),
+            (f'Trades: {self._trades}', WHITE)]
+
 
     # Useful properties
     @property
@@ -43,6 +74,10 @@ class CatTrader(DrawBase):
     @property
     def current_capital(self) -> float:
         return self._capital
+
+    @property
+    def death_at(self) -> float:
+        return self._death_at
     
     @property
     def assets_holding(self) -> float:
@@ -63,7 +98,13 @@ class CatTrader(DrawBase):
 
     @property
     def unrealized_gains(self) -> float:
+        # Gains is profit or loss based on the bought price
         return self._unrealized_gains
+    
+    @property 
+    def current_value(self) -> float:
+        return (self._holding * self._buy_price) + self._capital
+
     
     def process(self, action:Action, close:float) -> float:
         # This will change the internal variables values
@@ -96,6 +137,7 @@ class CatTrader(DrawBase):
 
                 # Reset the other values
                 self._capital += close * self._holding
+                self._isDead = True if self._capital < self._death_at else False
                 self._holding = 0.0
                 self._buy_price = 0.0
                 self._unrealized_gains = 0.0

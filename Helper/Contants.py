@@ -1,4 +1,4 @@
-import os, datetime
+import os, datetime, pygame
 # Color
 GREEN = (51, 204, 51)
 RED = (255, 0, 0)
@@ -7,8 +7,12 @@ BLACK = (51, 51, 0)
 BOARD_BACKGROUND_COLOR = (25, 49, 94)
 
 # Display
+pygame.init()
+info = pygame.display.Info()
+# DISPLAY_X = info.current_w - 100 
+# DISPLAY_Y = info.current_h - 100
 DISPLAY_X = 1000
-DISPLAY_Y = 500
+DISPLAY_Y = 800
 DISPLAY_Y_GAP = (0, 0)    # Pixel to leave as gap from (bottom, top)
 
 # Candle data
@@ -16,9 +20,11 @@ CANDLE_WIDTH = 5
 INTER_CANDLE_GAP = 2
 
 # deduced candle constants
-CANDLE_Y_SCLAE = DISPLAY_Y * 0.9
-MAX_CANDLES_ON_DISPLAY = int(DISPLAY_X/(CANDLE_WIDTH + INTER_CANDLE_GAP ))
+CANDLE_Y_SCLAE = DISPLAY_Y - 100
+USEABLE_X_SCREEN = DISPLAY_X - 200
+MAX_CANDLES_ON_DISPLAY = int(USEABLE_X_SCREEN/(CANDLE_WIDTH + INTER_CANDLE_GAP ))
 USEABLE_Y_SCREEN = DISPLAY_Y - DISPLAY_Y_GAP[0] - DISPLAY_Y_GAP[1]
+
 
 # Paths
 BEGIN_TIME = datetime.datetime.now().strftime("%d_%m_%Y_%H_%M")
