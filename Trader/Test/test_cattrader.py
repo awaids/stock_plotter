@@ -25,11 +25,11 @@ class TestCatTrader:
             self.Trader.process(action=Action.BUY, close=0)
 
     def test_process_default(self):
-        self.Trader.reset(starting_capital=100)
+        self.Trader.reset()
         assert(self.get_internals() == [100.0, 0.0, 0.0, 0.0, 0.0, 0, False])
 
     def test_process_trade_buy_sell_profit(self):
-        self.Trader.reset(starting_capital=100)
+        self.Trader.reset()
 
         # Buy
         self.Trader.process(action=Action.BUY, close=10.0)
@@ -43,7 +43,7 @@ class TestCatTrader:
         assert(self.get_internals() == [200.0, 0.0, 0.0, 100.0, 0.0, 1, False])
 
     def test_process_trade_buy_sell_loss(self):
-        self.Trader.reset(starting_capital=100)
+        self.Trader.reset()
         # Buy
         self.Trader.process(action=Action.BUY, close=10.0)
         assert(self.get_internals() == [0.0, 10.0, 0.0, 0.0, 0.0, 0, False])
@@ -53,7 +53,7 @@ class TestCatTrader:
         assert(self.get_internals() == [50.0, 0.0, 0.0, 0.0, 50.0, 1, True])
 
     def test_process_hold_cases(self):
-        self.Trader.reset(starting_capital=100)
+        self.Trader.reset()
 
         # Hold with nothing
         self.Trader.process(action=Action.HOLD, close=20.0)
@@ -78,7 +78,7 @@ class TestCatTrader:
         assert(self.get_internals() == [200.0, 0.0, 0.0, 100.0, 0.0, 1, False])
     
     def test_process_multiple_trades(self):
-        self.Trader.reset(starting_capital=100)
+        self.Trader.reset()
         # Buy & sell
         self.Trader.process(action=Action.BUY, close=10.0)
         self.Trader.process(action=Action.SELL, close=20.0)
@@ -89,7 +89,7 @@ class TestCatTrader:
 
     def test_rewards(self):
         # General test for rewards -> Not fixing it to explicit values
-        self.Trader.reset(starting_capital=100)
+        self.Trader.reset()
 
         # Test actions when not in trade
         assert(self.Trader.process(action=Action.HOLD, close=10.0) < 0)
@@ -105,20 +105,20 @@ class TestCatTrader:
         assert(self.Trader.process(action=Action.HOLD, close=50.0) > 0)
 
         #Test selling 
-        self.Trader.reset(starting_capital=100)
+        self.Trader.reset()
         self.Trader.process(action=Action.BUY, close=10.0)
         assert(self.Trader.process(action=Action.SELL, close=10.0) < 0)
 
-        self.Trader.reset(starting_capital=100)
+        self.Trader.reset()
         self.Trader.process(action=Action.BUY, close=10.0)
         assert(self.Trader.process(action=Action.SELL, close=5.0) < 0)
 
-        self.Trader.reset(starting_capital=100)
+        self.Trader.reset()
         self.Trader.process(action=Action.BUY, close=10.0)
         assert(self.Trader.process(action=Action.SELL, close=50.0) > 0)
 
     def test_display_stats(self):
-        self.Trader.reset(starting_capital=100)
+        self.Trader.reset()
         assert(self.Trader.current_value == 100)
 
         self.Trader.process(action=Action.BUY, close=10.0)

@@ -6,13 +6,23 @@ class StockSurface:
     pygame.init()
     pygame.font.init()
     Border_width = 2
+
+    def reset(self) -> None:
+        pygame.display.set_caption(self._caption)
+        self._surface = pygame.display.set_mode((self._x_size, self._y_size))
+        self._font = pygame.font.SysFont(None, self._font_size)
+        self._surface.fill(BOARD_BACKGROUND_COLOR)
+
+        # Maintain the last x_postion
+        self._last_x_pos = 0
+
     def __init__(self, caption:str="Default", x_size:int=DISPLAY_X, y_size:int=DISPLAY_Y) -> None:
         # Setup the display
-        pygame.display.set_caption(caption)
-        self._surface = pygame.display.set_mode((x_size, y_size))
+        self._caption = caption
+        self._x_size = x_size
+        self._y_size = y_size
         # hardcoding the font size here
         self._font_size = 25
-        self._font = pygame.font.SysFont(None, self._font_size)
 
         # Configure the useable screen
         # TODO: use these here
@@ -42,10 +52,6 @@ class StockSurface:
         assert(value >= 0), "X value cannot be negative"
         self._last_x_pos = value
 
-    def reset(self) -> None:
-        self._surface.fill(BOARD_BACKGROUND_COLOR)
-        self._last_x_pos = 0
-
     def show_display(self) -> None:
         pygame.display.flip()
     
@@ -58,17 +64,21 @@ class StockSurface:
     def draw_vertical_line(self, x_pos:int, color=WHITE) -> None:
         self.draw_line(color=color, start=(x_pos,0), end=(x_pos, self.screen_height))
 
-    def add_image(self, image:pygame.Surface, pos: Tuple[int,int]) -> None:
+    def add_image(self, image:pygame.Surface, pos: Tuple[int,int], opacity:bool=False) -> None:
+        if opacity:
+            image.set_alpha(100)
         self.surface.blit(image, pos)
     
-    def add_text(self, text:str, color, pos) -> None:
+    def add_text(self, text:str, color, pos, opacity:bool) -> None:
         image = self._font.render(text, True, color)
+        if opacity:
+            image.set_alpha(100)
         self._surface.blit(image, pos)
 
-    def add_multline_text(self, lines:List[Tuple[str, Tuple]], pos) -> None:
+    def add_multline_text(self, lines:List[Tuple[str, Tuple]], pos, opacity:bool = False) -> None:
         x_pos, y_pos = pos
         for line, color in lines:
-            self.add_text(line, color, (x_pos, y_pos))
+            self.add_text(line, color, (x_pos, y_pos), opacity)
             y_pos += (self._font_size / 1.5 )
 
 

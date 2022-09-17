@@ -10,13 +10,20 @@ class TestStockDataDF:
     df = DataReader.read_csv(csv=TEST_CSV)
     sdata = DataReader.StockDataDF(df)
 
-    def test_df(self):
+    def test_df_columns(self):
         # Test if colums are correct
         assert({'High', 'Low', 'Close', 'Open',} == set(self.df.columns)), "Columns dont match"
 
     def test_num_entries(self):
         # Test the num_entroes function
         assert(self.sdata.num_entries == 2), "Num entries should 2"
+
+    def test_data(self):
+        # Check if the individual normalization works
+        ref =  np.array([0.44444444,0.88888889, 0.22222222, 0.66666667])
+        assert(np.allclose(self.df.iloc[0].to_numpy(), ref))
+        ref = np.array([0.66666667, 1., 0.48888889, 0.53333333])
+        assert(np.allclose(self.df.iloc[1].to_numpy(), ref))
 
     def test_normalization(self):
         # Test if the normalization works

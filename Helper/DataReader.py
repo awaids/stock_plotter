@@ -18,6 +18,7 @@ class StockDataDF:
         
         # Manipualte the df & drop unnecessary columns
         self._df:pd.DataFrame = df
+        
         self._df.drop(columns=self._df.columns.difference(self._REQUIRED_COLUMNS), inplace=True)
 
         # Normalize the df

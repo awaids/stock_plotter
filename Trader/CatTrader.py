@@ -1,4 +1,3 @@
-import pygame
 from os.path import dirname, join
 from typing import List, Tuple
 from stock_plotter.Helper import Action
@@ -10,21 +9,23 @@ from stock_plotter.Surface import StockSurface
 class CatTrader():
     size = 50
 
-    def reset(self, starting_capital:float = 1000.0) -> None:
-        #NOTE: Once this is True, this means that the trader is dead. We must not process this,
-        # however we can still draw the death statistics!
-        self._isDead = False
+    def reset(self) -> None:
         self._inTrade = False
 
         # Trader state values
-        assert(starting_capital > 0), "Starting money for CatTrader must be greater than 0"
-        self._capital = starting_capital    # Current capital
+        assert(self.initial_starting_capital > 0), "Starting money for CatTrader must be greater than 0"
+        self._capital = self.initial_starting_capital    # Current capital
         self._unrealized_gains = 0.0    # Potential gain/loss for if in trade
         self._trades = 0    # No. of trader done uptil now
         self._cum_losses = 0.0  # Cummulative loss done on all trades
         self._cum_profits = 0.0 # Cummulative Profit done on all trades
         self._holding = 0.0 # No. of coins being held
         self._buy_price = 0.0
+
+        # Death processing
+        self._isDead = False
+        self._death_y = None
+        self._death_x = None
 
     def __init__(self, starting_capital:float = 1000.0, death_at:float = 0.75) -> None:
         # These images can be made class global but they require that pygame be init and setup
@@ -34,25 +35,34 @@ class CatTrader():
         self.initial_starting_capital = starting_capital
         self._death_at = self.initial_starting_capital * death_at 
         # Use the reset as intializing point for all the member variables
-        self.reset(self.initial_starting_capital)
+        self.reset()
 
     def draw(self, stockSurface:StockSurface, x_pos:int):
         assert(x_pos >= 0), "x_pos must be positive"
         y_pos = self._get_y_pos()
-        stockSurface.draw_vertical_line(x_pos=x_pos)
-        image = self.dead_cat if self.isDead else self.alive_cat
-        stockSurface.add_image(image=image, pos = (x_pos - self.size, y_pos))
-        # Add the stats 
-        stats = self._get_display_stats()
-        # Adding some pace between the line and stats
-        stockSurface.add_multline_text(lines=stats, pos = (x_pos + 1 , y_pos))
+        image = self.alive_cat
+        opacity = False
+        if self.isDead:
+            if self._death_x is None and self._death_y is None:
+                self._death_y = y_pos
+                self._death_x = x_pos
+            else:
+                y_pos = self._death_y 
+                x_pos = self._death_x
+            image = self.dead_cat
+            opacity = True
+        else: 
+            stockSurface.draw_vertical_line(x_pos=x_pos)
+        # Draw the image
+        stockSurface.add_image(image=image, pos = (x_pos - self.size, y_pos), opacity=opacity)
+        stockSurface.add_multline_text(lines=self._get_display_stats(), pos = (x_pos + 1 , y_pos), opacity=opacity)
 
     def _get_y_pos(self) -> int:
         # The y-pos is determined by the starting capital and the current status of the trader
         # We consider that the screen is 3 times the starting capital and the starting capital is 
         # always 1/3
         total_screen = 3 * self.initial_starting_capital
-        ratio = (self.current_value + self._unrealized_gains) /total_screen
+        ratio = (self.current_value + self._unrealized_gains) / total_screen
         return ss(max(min(ratio, 0.9), 0.1))
 
     def _get_display_stats(self) -> List[Tuple[str, Tuple]]:
@@ -114,6 +124,9 @@ class CatTrader():
         return reward
 
     def _update(self, action:Action, close:float) -> None:
+        if self.isDead:
+            return
+
         if action == Action.BUY:
             # Only buy when in not trade
             if not self._inTrade:
@@ -137,11 +150,14 @@ class CatTrader():
 
                 # Reset the other values
                 self._capital += close * self._holding
-                self._isDead = True if self._capital < self._death_at else False
                 self._holding = 0.0
                 self._buy_price = 0.0
                 self._unrealized_gains = 0.0
                 self._inTrade = False
+
+                if self._capital < self._death_at:
+                    self._isDead = True
+
 
                 #Increment trade
                 self._trades += 1
