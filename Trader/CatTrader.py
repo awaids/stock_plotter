@@ -5,7 +5,6 @@ from stock_plotter.Helper.Contants import *
 from stock_plotter.Helper.Functions import ss
 from stock_plotter.Surface import StockSurface
 
-
 class CatTrader():
     size = 50
 
@@ -119,7 +118,7 @@ class CatTrader():
     def process(self, action:Action, close:float) -> float:
         # This will change the internal variables values
         assert(close != 0.0), "Close values cannot be 0"
-        reward = self._compute_reward(action, close)
+        reward = self._compute_reward_trades(action, close)
         self._update(action, close)
         return reward
 
@@ -158,7 +157,6 @@ class CatTrader():
                 if self._capital < self._death_at:
                     self._isDead = True
 
-
                 #Increment trade
                 self._trades += 1
 
@@ -179,4 +177,21 @@ class CatTrader():
             else:
                 reward = -1.0
         assert(reward), "NONE reward computed!"
+        return reward
+
+    def _compute_reward_trades(self, action:Action, close:float) -> float:
+        reward = 0
+        if action == Action.BUY:
+            reward = 1.0 if not self._inTrade else -1.0
+        elif action == Action.HOLD:
+            if self._inTrade:
+                reward = 0.01 if close > self._buy_price else -0.01
+            else:
+                reward = -1
+        elif action == Action.SELL:
+            if self._inTrade:
+                change_percentage = (close - self._buy_price)/self._buy_price
+                reward = 2 if change_percentage > 0.0 else -2
+            else:
+                reward = -1.0
         return reward
