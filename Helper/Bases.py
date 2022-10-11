@@ -3,6 +3,7 @@ import pygame
 import enum
 import pandas as pd
 from abc import ABC, abstractclassmethod
+from typing import List
 
 class Coordinate:
     """ Simple class to determine a cooridnate """
@@ -40,3 +41,7 @@ class Action(enum.Enum):
 			return Action.HOLD
 		elif action == 2:
 			return Action.BUY
+	
+	@classmethod
+	def get_actions_list(cls) -> List[str]:
+		return ['SELL', 'HOLD', 'BUY']

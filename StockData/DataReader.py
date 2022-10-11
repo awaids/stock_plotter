@@ -1,4 +1,5 @@
 import pandas as pd
+from typing import List
 
 def read_csv(csv: str) -> pd.DataFrame:
     """ Reads the provided csv and returns a dataframe"""
@@ -34,6 +35,9 @@ class StockDataDF:
     def num_entries(self) -> int:
         # Total data in the current dataframe
         return self._df.shape[0]
+    
+    def get_col_names(self) -> List[str]:
+        return self._df.columns
 
     def df_generator(self) :
         # Only to be used to get live data like df

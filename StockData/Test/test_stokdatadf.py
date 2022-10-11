@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from stock_plotter.Helper import DataReader 
+from stock_plotter.StockData import DataReader 
 
 import os
 TEST_CSV = os.path.join(os.path.dirname(__file__), 'test_data.csv')
@@ -60,3 +60,6 @@ class TestStockDataDF:
         df_gen =  self.sdata.df_generator()
         assert(self.sdata.get_last_close(next(df_gen)) == 150)
         assert(self.sdata.get_last_close(next(df_gen)) == 120)
+
+    def test_column_names(self):
+        assert((['Open', 'High', 'Low', 'Close'] == self.sdata.get_col_names()).all())

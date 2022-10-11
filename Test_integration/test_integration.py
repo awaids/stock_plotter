@@ -4,8 +4,8 @@ from os.path import dirname, join
 from typing import List
 from stock_plotter.Candle import CandleSticks
 from stock_plotter.Helper import Action
-from stock_plotter.Helper.DataReader import StockDataDF
-from stock_plotter.Helper.DataReader import read_csv
+from stock_plotter.StockData.DataReader import StockDataDF
+from stock_plotter.StockData.DataReader import read_csv
 from stock_plotter.Surface import StockSurface
 from random import seed, randint
 seed(1)

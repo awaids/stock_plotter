@@ -114,13 +114,20 @@ class CatTrader():
     def current_value(self) -> float:
         return (self._holding * self._buy_price) + self._capital
 
+    def _unrealized_death(self) -> None:
+        if self.isDead:
+            return
+        # Force death if the unrealized gains caused a loss of 5% of the current value
+        if (self.current_value + self._unrealized_gains) <= (self.current_value * 0.95):
+            self._isDead = True
+
     
-    def process(self, action:Action, close:float) -> float:
+    def process(self, action:Action, close:float) -> Tuple[float, float]:
         # This will change the internal variables values
         assert(close != 0.0), "Close values cannot be 0"
-        reward = self._compute_reward_trades(action, close)
+        rewardTemp, rewardFinal = self._compute_reward_trades(action, close)
         self._update(action, close)
-        return reward
+        return rewardTemp, rewardFinal
 
     def _update(self, action:Action, close:float) -> None:
         if self.isDead:
@@ -160,38 +167,45 @@ class CatTrader():
                 #Increment trade
                 self._trades += 1
 
-    # Here are the main reward functions
-    def _compute_reward(self, action:Action, close:float) -> float:
-        reward = None
-        if action == Action.BUY:
-            reward = 1.0 if not self._inTrade else -1.0
-        elif action == Action.HOLD:
-            if self._inTrade:
-                reward = 0.5 if close > self._buy_price else -0.5
-            else:
-                reward = -0.1
-        elif action == Action.SELL:
-            if self._inTrade:
-                change_percentage = (close - self._buy_price)/self._buy_price
-                reward = 1 + change_percentage if change_percentage > 0.0 else - 2 - change_percentage
-            else:
-                reward = -1.0
-        assert(reward), "NONE reward computed!"
-        return reward
+        self._unrealized_death()
 
-    def _compute_reward_trades(self, action:Action, close:float) -> float:
-        reward = 0
+    # Here are the main reward functions
+    def _compute_reward(self, action:Action, close:float) -> Tuple[float, float]:
+        rewardTemp, rewardFinal = 0, 0
         if action == Action.BUY:
-            reward = 1.0 if not self._inTrade else -1.0
+            rewardTemp = 1.0 if not self._inTrade else -1.0
         elif action == Action.HOLD:
             if self._inTrade:
-                reward = 0.01 if close > self._buy_price else -0.01
+                rewardTemp = 0.5 if close > self._buy_price else -0.5
             else:
-                reward = -1
+                rewardTemp = -0.1
         elif action == Action.SELL:
             if self._inTrade:
                 change_percentage = (close - self._buy_price)/self._buy_price
-                reward = 2 if change_percentage > 0.0 else -2
+                rewardFinal = 1 + change_percentage if change_percentage > 0.0 else - 2 - change_percentage
             else:
-                reward = -1.0
-        return reward
+                rewardFinal = -1.0
+        assert(rewardTemp), "NONE reward computed!"
+        return rewardTemp, rewardFinal
+
+    def _compute_reward_trades(self, action:Action, close:float) -> Tuple[float, float]:
+        wrong_action = -0.5
+        right_action = 1.0
+        rewardTemp, rewardFinal = 0, 0
+        if action == Action.BUY:
+            if self._inTrade:
+                rewardTemp = wrong_action
+            else:
+                rewardTemp = right_action
+        elif action == Action.HOLD:
+            if self._inTrade:
+                rewardTemp = 0.1 if close > self._buy_price else -0.1
+            else:
+                rewardTemp = wrong_action
+        elif action == Action.SELL:
+            if self._inTrade:
+                change_percentage = (close - self._buy_price)/self._buy_price
+                rewardFinal = 2 if change_percentage > 0.0 else -2
+            else:
+                rewardTemp = wrong_action
+        return rewardTemp, rewardFinal
