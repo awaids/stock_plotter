@@ -1,12 +1,12 @@
 import pytest
 import numpy as np
 from stock_plotter.StockData import DataReader 
+from pathlib import Path
 
-import os
-TEST_CSV = os.path.join(os.path.dirname(__file__), 'test_data.csv')
+TEST_CSV = Path(__file__).parent / 'test_data.csv'
 
 
-class TestStockDataDF:
+class TestStockDataDFNormalized:
     df = DataReader.read_csv(csv=TEST_CSV)
     sdata = DataReader.StockDataDF(df)
 
@@ -63,3 +63,17 @@ class TestStockDataDF:
 
     def test_column_names(self):
         assert((['Open', 'High', 'Low', 'Close'] == self.sdata.get_col_names()).all())
+
+
+class TestStockDataDFNotNormalized:
+    df = DataReader.read_csv(csv=TEST_CSV)
+    sdata = DataReader.StockDataDF(df=df, normalize=False)
+    
+    def test_values(self):
+        assert(self.sdata.df['Open'].iloc[-1] == 150.0)
+    
+    def test_denormlizing(self):
+        # The denormlaization should not matter here!
+        assert(self.sdata.de_normalize(50.0) == 50.0)
+
+

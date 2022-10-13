@@ -1,8 +1,10 @@
+from pathlib import Path
 import pandas as pd
 from typing import List
 
-def read_csv(csv: str) -> pd.DataFrame:
+def read_csv(csv: Path) -> pd.DataFrame:
     """ Reads the provided csv and returns a dataframe"""
+    assert(Path.exists(csv))
     required_coulmns = {'OpenTime', 'Open', 'High', 'Low', 'Close', 'Volume', 'CloseTime',
        'QuoteAssetVol', 'NumberTrades', 'BuyBaseAssetVol', 'BuyQuoteAssetVol'}
     df = pd.read_csv(csv)
@@ -13,7 +15,7 @@ class StockDataDF:
     """ Class to maniuplate the DataFrame for pygame  
     NOTE: This class will normalize the values!"""
     _REQUIRED_COLUMNS = ['High', 'Low', 'Close', 'Open']
-    def __init__(self, df:pd.DataFrame) -> None:
+    def __init__(self, df:pd.DataFrame, normalize:bool=True) -> None:
         for col in self._REQUIRED_COLUMNS:
             assert(col in df.columns), "Missing column in df"
         
@@ -23,7 +25,7 @@ class StockDataDF:
         self._df.drop(columns=self._df.columns.difference(self._REQUIRED_COLUMNS), inplace=True)
 
         # Normalize the df
-        self._Normalizing_factor = self._df['High'].max()
+        self._Normalizing_factor = self._df['High'].max() if normalize else 1.0
         for col in ['Open', 'Close', 'High', 'Low']:
             self._df[col] = self._df[col].div(self._Normalizing_factor)
 
