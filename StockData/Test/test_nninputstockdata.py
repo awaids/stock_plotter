@@ -1,4 +1,4 @@
-import pathlib
+import pathlib 
 import pytest
 import pandas as pd
 import numpy as np
@@ -104,6 +104,28 @@ class TestNNInputStockData:
         observation = StockData.prepare_input(df)
         ref = [0.43944644, 0.54003719, 0.64062794, -0.0170059, 0.64087909, -0.10542347, 0.03662134, -0.11008256]
         assert(np.allclose(observation, ref))
+    
+    def test_pickle_dump_and_load(self):
+        ''' Testing if we can dump the NNInputStockData object and re-use it again '''
+        df = read_csv(csv = pathlib.Path(__file__).parent / 'BTCUSDT_1d.csv')
+        StockData = NNInputStockData()
+        StockData.register_indicators([Dummy1])
+        ref1 = StockData.prepare_input(df)
+        # dump
+        StockData.dump(file=pathlib.Path('NNInputStockData.pkl'))
+        # load
+        obj = NNInputStockData.load(pathlib.Path('NNInputStockData.pkl'))
+        ref2 = obj.prepare_input(df)
+        assert(np.allclose(ref1, ref2))
+    
+    def test_load_only(self):
+        ''' Testing if we can load the NNInputStockData object and re-use it again '''
+        df = read_csv(csv = pathlib.Path(__file__).parent / 'BTCUSDT_1d.csv')
+        ref1 = [-1.70059020e-02, 2.30333850e+04, -1.05423469e-01, 3.66213423e-02, -1.10082558e-01]
+        # load
+        obj = NNInputStockData.load(pathlib.Path('test.pkl'))
+        ref2 = obj.prepare_input(df)
+        assert(np.allclose(ref1, ref2))
 
 class Test_live_df:
     def test_with_live_data(self):

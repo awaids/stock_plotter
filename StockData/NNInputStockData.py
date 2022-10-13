@@ -1,8 +1,11 @@
+from __future__ import annotations
+from pathlib import Path
 from queue import Empty
 from .Indicators import IndicatorBase
 from typing import Set, List
 import pandas as pd
 import numpy as np
+import pickle
 
 class NNInputStockData:
     ''' This class is used to manipulte the basic stock dataframe such that it can be feed as input
@@ -60,3 +63,15 @@ class NNInputStockData:
         # Sort the columns by name else we might get different orders!
         new_df = new_df.reindex(sorted(new_df.columns), axis=1)
         return new_df.iloc[-1].to_numpy()
+    
+    def dump(self, file:Path) -> None:
+        ''' Dumps the class object to file so it can be later used '''
+        with open(file, 'wb') as fp:
+            pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
+
+    @classmethod
+    def load(cls, pkl_file:Path) -> NNInputStockData:
+        ''' Loads and returns an object of the class from file '''
+        with open(pkl_file, 'rb') as inp:
+            obj = pickle.load(inp)
+        return obj
