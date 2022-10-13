@@ -1,3 +1,3 @@
 from .DataReader import StockDataDF
-from .NNInputStockData import IndicatorBase
+from .Indicators import *
 from .NNInputStockData import NNInputStockData
