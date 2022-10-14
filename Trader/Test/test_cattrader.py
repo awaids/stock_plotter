@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from stock_plotter.Helper.Bases import Action
 from stock_plotter.Trader import CatTrader
 from stock_plotter.Helper.Functions import setup_disply
@@ -119,3 +120,18 @@ class TestCatTrader:
 
         self.Trader.update_state(action=Action.SELL, close=20.0)
         assert(self.Trader.current_value == 100)
+    
+    def test_append_intrade(self):
+        obs = np.array([1,2,3])
+        self.Trader.reset()
+        # Test no trade addition to observation
+        self.Trader.process(action=Action.HOLD, close=5.0)
+        assert((self.Trader.append_intrade(obs) == [1,2,3, 0.0]).all())
+        with pytest.raises(AssertionError): 
+            assert((self.Trader.append_intrade(obs) == [1,2,3, 1.0]).all())
+        # Test in trade addition to observation
+        self.Trader.process(action=Action.BUY, close=5.0)
+        assert((self.Trader.append_intrade(obs) == [1,2,3, 1.0]).all())
+        with pytest.raises(AssertionError): 
+            assert((self.Trader.append_intrade(obs) == [1,2,3, 0.0]).all())
+

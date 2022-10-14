@@ -126,6 +126,7 @@ class CatTrader():
         self.update_state(action, close)
         return rewardTemp, rewardFinal
 
+
     def update_state(self, action:Action, close:float) -> None:
         if self.isDead:
             return
