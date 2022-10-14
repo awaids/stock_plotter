@@ -53,8 +53,8 @@ class NNInputStockData:
             ind().add_indicator_col(df=df)
 
     def prepare_input(self, df:pd.DataFrame) -> np.ndarray:
-        ''' Prepares the df with appending the indicators info and also returns
-            a single observation '''
+        """ Prepares the df with appending the indicators info and also returns
+            a single observation """
         # Asserts to ensure that the df can consume the df
         assert(self.required_cols.issubset(df.columns)), "Columns required by indicators not in df"
         assert(df.shape[0] >= self.required_period + 1), "Dataframe size is less than max period of indicators"
@@ -65,21 +65,21 @@ class NNInputStockData:
         new_df.drop(columns=new_df.columns.difference(self.Base_Columns), inplace=True)
         # Add the indicators values
         self.add_indicators_to_df(new_df)
-        for col in ['Open', 'Close', 'High', 'Low']:
+        for col in self.Base_Columns:
             new_df[col] = new_df[col].pct_change()
         
         # Sort the columns by name else we might get different orders!
         new_df = new_df.reindex(sorted(new_df.columns), axis=1)
         return new_df.iloc[-1].to_numpy()
-    
+
     def dump(self, file:Path) -> None:
-        ''' Dumps the class object to file so it can be later used '''
+        """ Dumps the class object to file so it can be later used """
         with open(file, 'wb') as fp:
             pickle.dump(self, fp, pickle.HIGHEST_PROTOCOL)
 
     @classmethod
     def load(cls, pkl_file:Path) -> NNInputStockData:
-        ''' Loads and returns an object of the class from file '''
+        """ Loads and returns an object of the class from file """
         with open(pkl_file, 'rb') as inp:
             obj = pickle.load(inp)
         return obj

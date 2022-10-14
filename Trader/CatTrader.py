@@ -1,9 +1,11 @@
-from os.path import dirname, join
+import numpy as np
+from pathlib import Path
 from typing import List, Tuple
 from stock_plotter.Helper import Action
 from stock_plotter.Helper.Contants import *
 from stock_plotter.Helper.Functions import ss
 from stock_plotter.Surface import StockSurface
+from stock_plotter.Trader.RewardFunction import reward_winning_trades
 
 class CatTrader():
     size = 50
