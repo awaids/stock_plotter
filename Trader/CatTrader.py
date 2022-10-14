@@ -28,8 +28,8 @@ class CatTrader():
 
     def __init__(self, starting_capital:float = 1000.0, death_at:float = 0.75) -> None:
         # These images can be made class global but they require that pygame be init and setup
-        self.alive_cat =  StockSurface.load_image(join(dirname(__file__), "cat.svg"), (self.size, self.size))
-        self.dead_cat =  StockSurface.load_image(join(dirname(__file__), "death.svg"), (self.size, self.size))
+        self.alive_cat =  StockSurface.load_image(Path(__file__).parent / 'cat.svg', (self.size, self.size))
+        self.dead_cat =  StockSurface.load_image(Path(__file__).parent / 'death.svg', (self.size, self.size))
         # Used by reset to properly setup variables
         self.initial_starting_capital = starting_capital
         self._death_at = self.initial_starting_capital * death_at 

@@ -1,4 +1,5 @@
 import pygame
+from pathlib import Path
 from typing import Tuple, List
 from ..Helper.Contants import *
 
@@ -83,7 +84,7 @@ class StockSurface:
 
 
     @staticmethod
-    def load_image(path:str, size: Tuple[int,int]) -> pygame.Surface:
+    def load_image(path:Path, size: Tuple[int,int]) -> pygame.Surface:
         assert(pygame.get_init()), "pygame not initialized"
 
         for s in size:
