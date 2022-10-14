@@ -74,6 +74,8 @@ class CatTrader():
             (f'{self.current_value:0.2f}', WHITE),
             (f'Trades: {self._trades}', WHITE)]
 
+    def append_intrade(self, observation:np.ndarray) -> np.ndarray:
+        return np.append(observation, 1.0 if self._inTrade else 0.0)
 
     # Useful properties
     @property
@@ -114,22 +116,15 @@ class CatTrader():
     def current_value(self) -> float:
         return (self._holding * self._buy_price) + self._capital
 
-    def _unrealized_death(self) -> None:
-        if self.isDead:
-            return
-        # Force death if the unrealized gains caused a loss of 5% of the current value
-        if (self.current_value + self._unrealized_gains) <= (self.current_value * 0.95):
-            self._isDead = True
-
-    
     def process(self, action:Action, close:float) -> Tuple[float, float]:
         # This will change the internal variables values
         assert(close != 0.0), "Close values cannot be 0"
-        rewardTemp, rewardFinal = self._compute_reward_trades(action, close)
-        self._update(action, close)
+        rewardTemp, rewardFinal = reward_winning_trades(
+            action=action, close=close, inTrade=self._inTrade, buyPrice=self._buy_price)
+        self.update_state(action, close)
         return rewardTemp, rewardFinal
 
-    def _update(self, action:Action, close:float) -> None:
+    def update_state(self, action:Action, close:float) -> None:
         if self.isDead:
             return
 
@@ -144,6 +139,9 @@ class CatTrader():
             # Only update the unrealized gains if in trade
             if self._inTrade:
                 self._unrealized_gains =  (close - self._buy_price) * self._holding
+            # Configure unrealized loss death
+            if (self.current_value + self._unrealized_gains) < self._death_at:
+                self._isDead = True
         elif action == Action.SELL:
             # Only sell when already in trade
             if self._inTrade:
@@ -166,46 +164,3 @@ class CatTrader():
 
                 #Increment trade
                 self._trades += 1
-
-        self._unrealized_death()
-
-    # Here are the main reward functions
-    def _compute_reward(self, action:Action, close:float) -> Tuple[float, float]:
-        rewardTemp, rewardFinal = 0, 0
-        if action == Action.BUY:
-            rewardTemp = 1.0 if not self._inTrade else -1.0
-        elif action == Action.HOLD:
-            if self._inTrade:
-                rewardTemp = 0.5 if close > self._buy_price else -0.5
-            else:
-                rewardTemp = -0.1
-        elif action == Action.SELL:
-            if self._inTrade:
-                change_percentage = (close - self._buy_price)/self._buy_price
-                rewardFinal = 1 + change_percentage if change_percentage > 0.0 else - 2 - change_percentage
-            else:
-                rewardFinal = -1.0
-        assert(rewardTemp), "NONE reward computed!"
-        return rewardTemp, rewardFinal
-
-    def _compute_reward_trades(self, action:Action, close:float) -> Tuple[float, float]:
-        wrong_action = -0.5
-        right_action = 1.0
-        rewardTemp, rewardFinal = 0, 0
-        if action == Action.BUY:
-            if self._inTrade:
-                rewardTemp = wrong_action
-            else:
-                rewardTemp = right_action
-        elif action == Action.HOLD:
-            if self._inTrade:
-                rewardTemp = 0.1 if close > self._buy_price else -0.1
-            else:
-                rewardTemp = wrong_action
-        elif action == Action.SELL:
-            if self._inTrade:
-                change_percentage = (close - self._buy_price)/self._buy_price
-                rewardFinal = 2 if change_percentage > 0.0 else -2
-            else:
-                rewardTemp = wrong_action
-        return rewardTemp, rewardFinal
