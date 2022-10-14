@@ -25,7 +25,8 @@ class StockDataDF:
         self._df.drop(columns=self._df.columns.difference(self._REQUIRED_COLUMNS), inplace=True)
 
         # Normalize the df
-        self._Normalizing_factor = self._df['High'].max() if normalize else 1.0
+        self._maxValue = self._df['High'].max()
+        self._Normalizing_factor = self._maxValue if normalize else 1.0
         for col in ['Open', 'Close', 'High', 'Low']:
             self._df[col] = self._df[col].div(self._Normalizing_factor)
 
@@ -57,3 +58,9 @@ class StockDataDF:
         as clsoe value """
         assert(df.shape[0] >= 1), "Empty df has been received"
         return self.de_normalize(df.iloc[-1]['Close'])
+
+    def df_to_pygame(self, df:pd.DataFrame) -> pd.DataFrame:
+        """ Normaizes the df between 1-0 based on the max value
+            The Max value is determined when this class is init """
+        pygame_df = df.copy(deep=True)
+        return pygame_df.div(self._maxValue)    
