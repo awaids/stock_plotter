@@ -25,6 +25,11 @@ class IndicatorBase(ABC):
     @abstractmethod
     def _compute(self, df:pd.DataFrame):
         raise NotImplementedError
+    
+    @abstractmethod
+    def output_cols(self) -> List[str]:
+        """ Returns a list of cols that this indicator will append to the df """
+        raise NotImplementedError
 
     def add_indicator_col(self, df:pd.DataFrame):
         # This function will update the current df -> otherwise this might
@@ -37,15 +42,26 @@ class IndicatorBase(ABC):
 class EMA50(IndicatorBase):
     Period = 50
     Required_Columns = {'Close'}
+    def output_cols(self) -> List[str]:
+        return [self.__class__.__name__]
+
     def _compute(self, df:pd.DataFrame) -> pd.DataFrame:
         close = df['Close'].to_numpy()
         col = self.__class__.__name__
         ema = ta.EMA(close, timeperiod=self.Period)
         df[col] = normalize(ema)
+    
 
 class BB24(IndicatorBase):
     Period = 24
     Required_Columns = {'Close'}
+    def output_cols(self) -> List[str]:
+        return [
+            f'{self.__class__.__name__}Lower',
+            f'{self.__class__.__name__}Middle',
+            f'{self.__class__.__name__}Upper'
+        ]
+
     def _compute(self, df:pd.DataFrame):
         close = df['Close'].to_numpy()
         u, m, l = ta.BBANDS(close, timeperiod=self.Period, nbdevup=2, nbdevdn=2, matype=0)

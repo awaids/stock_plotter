@@ -22,6 +22,8 @@ def test_normalize():
 class Dummy1(IndicatorBase):
     Required_Columns = {'Close'}
     Period = 1
+    def output_cols(self):
+        return [__class__.__name__]
     def _compute(self, df:pd.DataFrame):
         df[__class__.__name__] = df['Close'] * 0.5
         return df
@@ -29,6 +31,8 @@ class Dummy1(IndicatorBase):
 class Dummy2(IndicatorBase):
     Required_Columns = {'Dummy'}
     Period = 5 
+    def output_cols(self):
+        return [__class__.__name__]
     def _compute(self, df:pd.DataFrame):
         return df
 
@@ -95,6 +99,12 @@ class TestNNInputStockData:
         StockData.register_indicators([Dummy1, Dummy2])
         with pytest.raises(AssertionError):
             StockData.add_indicators_to_df(df)
+
+    def test_output_cols(self):
+        StockData = NNInputStockData()
+        StockData.register_indicators([Dummy1, Dummy2])
+        # Order is really important here!
+        assert(StockData.output_cols == ['Close', 'Dummy1', 'Dummy2', 'High', 'Low', 'Open']), "Order not kept"
     
     def test_prepare_input(self):
         # Tests the complete input preparation by the class

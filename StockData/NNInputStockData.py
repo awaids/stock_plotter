@@ -39,6 +39,14 @@ class NNInputStockData:
             cols = cols | ind.Required_Columns
         return cols
 
+    @property
+    def output_cols(self) -> List[str]:
+        """ Sorted list of all the columns that the output will contain """
+        cols = list(self.Base_Columns)
+        for ind in self._indicators:
+            cols = cols + ind().output_cols()
+        return sorted(cols)
+
     def add_indicators_to_df(self, df:pd.DataFrame):
         # Adds columns for the indicators to the current df
         for ind in self._indicators:
