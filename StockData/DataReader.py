@@ -5,8 +5,7 @@ from typing import List
 def read_csv(csv: Path) -> pd.DataFrame:
     """ Reads the provided csv and returns a dataframe"""
     assert(Path.exists(csv))
-    required_coulmns = {'OpenTime', 'Open', 'High', 'Low', 'Close', 'Volume', 'CloseTime',
-       'QuoteAssetVol', 'NumberTrades', 'BuyBaseAssetVol', 'BuyQuoteAssetVol'}
+    required_coulmns = {'Open', 'High', 'Low', 'Close'}
     df = pd.read_csv(csv)
     assert(required_coulmns.issubset(set(df.columns))), "Requierd columns not found in Dataframe"
     return df
@@ -63,4 +62,8 @@ class StockDataDF:
         """ Normaizes the df between 1-0 based on the max value
             The Max value is determined when this class is init """
         pygame_df = df.copy(deep=True)
-        return pygame_df.div(self._maxValue)    
+        return pygame_df.div(self._maxValue)
+
+    @classmethod
+    def parse_csv(cls, csv:Path, normalize:bool):
+        return StockDataDF(read_csv(csv=csv), normalize=normalize)
