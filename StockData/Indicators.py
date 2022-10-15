@@ -45,12 +45,23 @@ class EMA50(IndicatorBase):
     def output_cols(self) -> List[str]:
         return [self.__class__.__name__]
 
-    def _compute(self, df:pd.DataFrame) -> pd.DataFrame:
+    def _compute(self, df:pd.DataFrame):
         close = df['Close'].to_numpy()
         col = self.__class__.__name__
         ema = ta.EMA(close, timeperiod=self.Period)
         df[col] = normalize(ema)
     
+class RSI14(IndicatorBase):
+    Period = 14
+    Required_Columns = {'Close'}
+    def output_cols(self) -> List[str]:
+        return ['RSI14']
+
+    def _compute(self, df:pd.DataFrame):
+        close = df['Close'].to_numpy()
+        col = 'RSI14'
+        rsi = ta.RSI(close, timeperiod=self.Period)
+        df[col] = normalize(rsi)
 
 class BB24(IndicatorBase):
     Period = 24
