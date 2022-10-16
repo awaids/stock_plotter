@@ -11,10 +11,12 @@ class NNInputStockData:
     ''' This class is used to manipulte the basic stock dataframe such that it can be feed as input
         to a NN for both training and inference '''
     Base_Columns = {'Open', 'Close', 'High', 'Low'}
-    Historical_Period = 100   # Additonal period to account for normalization and scaling
 
-    def __init__(self) -> None:
+    def __init__(self, historical_period:int=100) -> None:
+        # Historical period means hows many older klines to ensure that some historical data is accounted for
+        # when normalizhing and scaling
         self._indicators: Set[IndicatorBase] = set()
+        self._historical_period = historical_period
 
     def register_indicator(self, indicator:IndicatorBase) -> None:
         self._indicators.add(indicator)
@@ -24,13 +26,14 @@ class NNInputStockData:
             self.register_indicator(ind)
 
     def get_indicators_period(self) -> int:
-        assert(self._indicators is not Empty), "No Indicators registered"
+        if not self._indicators:
+            return 1
         return max([ind.Period for ind in self._indicators])
 
     @property
     def required_period(self) -> int:
         # Required period for indicators and historical data to normalize aganist
-        return self.get_indicators_period() + self.Historical_Period
+        return self.get_indicators_period() + self._historical_period
 
     @property
     def required_cols(self) -> Set[str]:

@@ -65,5 +65,5 @@ class StockDataDF:
         return pygame_df.div(self._maxValue)
 
     @classmethod
-    def parse_csv(cls, csv:Path, normalize:bool):
+    def parse_csv(cls, csv:Path, normalize:bool=False):
         return StockDataDF(read_csv(csv=csv), normalize=normalize)
