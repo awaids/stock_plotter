@@ -8,7 +8,7 @@ from stock_plotter.Surface import StockSurface
 from stock_plotter.Trader.RewardFunction import reward_winning_trades
 
 class CatTrader():
-    size = 50
+    image_size = 50
 
     def reset(self) -> None:
         self._inTrade = False
@@ -30,8 +30,8 @@ class CatTrader():
 
     def __init__(self, starting_capital:float = 1000.0, death_at:float = 0.75) -> None:
         # These images can be made class global but they require that pygame be init and setup
-        self.alive_cat =  StockSurface.load_image(Path(__file__).parent / 'cat.svg', (self.size, self.size))
-        self.dead_cat =  StockSurface.load_image(Path(__file__).parent / 'death.svg', (self.size, self.size))
+        self.alive_cat_path =  Path(__file__).parent / 'cat.svg'
+        self.dead_cat_path =  Path(__file__).parent / 'death.svg'
         # Used by reset to properly setup variables
         self.initial_starting_capital = starting_capital
         self._death_at = self.initial_starting_capital * death_at 
@@ -41,7 +41,7 @@ class CatTrader():
     def draw(self, stockSurface:StockSurface, x_pos:int):
         assert(x_pos >= 0), "x_pos must be positive"
         y_pos = self._get_y_pos()
-        image = self.alive_cat
+        image_path = self.alive_cat_path
         opacity = False
         if self.isDead:
             if self._death_x is None and self._death_y is None:
@@ -50,12 +50,14 @@ class CatTrader():
             else:
                 y_pos = self._death_y 
                 x_pos = self._death_x
-            image = self.dead_cat
+            image = self.dead_cat_path
             opacity = True
         else: 
             stockSurface.draw_vertical_line(x_pos=x_pos)
         # Draw the image
-        stockSurface.add_image(image=image, pos = (x_pos - self.size, y_pos), opacity=opacity)
+        size = self.image_size
+        image = StockSurface.load_image(image_path, (size, size))
+        stockSurface.add_image(image=image, pos = (x_pos - size, y_pos), opacity=opacity)
         stockSurface.add_multline_text(lines=self._get_display_stats(), pos = (x_pos + 1 , y_pos), opacity=opacity)
 
     def _get_y_pos(self) -> int:

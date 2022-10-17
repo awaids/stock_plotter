@@ -1,3 +1,4 @@
+from functools import cache
 import pygame
 from pathlib import Path
 from typing import Tuple, List
@@ -82,7 +83,7 @@ class StockSurface:
             self.add_text(line, color, (x_pos, y_pos), opacity)
             y_pos += (self._font_size / 1.5 )
 
-
+    @cache
     @staticmethod
     def load_image(path:Path, size: Tuple[int,int]) -> pygame.Surface:
         assert(pygame.get_init()), "pygame not initialized"
