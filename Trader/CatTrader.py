@@ -141,6 +141,9 @@ class CatTrader():
                 self._capital -= self._holding * close
                 self._buy_price = close
                 self._inTrade = True
+            else:
+                # This happens when we get a buy on buy, the unrealized gains still need to be updated
+                self._unrealized_gains =  (close - self._buy_price) * self._holding
         elif action == Action.HOLD:
             # Only update the unrealized gains if in trade
             if self._inTrade:
