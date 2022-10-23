@@ -70,13 +70,15 @@ class StockSurface:
             image.set_alpha(100)
         self.surface.blit(image, pos)
     
-    def add_text(self, text:str, color, pos, opacity:bool) -> None:
+    def add_text(self, text:str, color, pos: Tuple[int,int], opacity:bool) -> None:
         image = self._font.render(text, True, color)
         if opacity:
             image.set_alpha(100)
         self._surface.blit(image, pos)
 
     def add_multline_text(self, lines:List[Tuple[str, Tuple]], pos, opacity:bool = False) -> None:
+        # Takes a list containing a tuple of sting text and another tuple of the (r,g,b) color
+        # Use the colors defined constants
         x_pos, y_pos = pos
         for line, color in lines:
             self.add_text(line, color, (x_pos, y_pos), opacity)

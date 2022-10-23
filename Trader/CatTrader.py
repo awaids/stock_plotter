@@ -76,7 +76,8 @@ class CatTrader():
         return [
             (f'Gains: {self._unrealized_gains:0.2f}', color),
             (f'{self.current_value:0.2f}', WHITE),
-            (f'Trades: {self._trades}', WHITE)]
+            (f'Trades: {self._trades}', WHITE),
+            (f'{"--IN TRADE--" if self._inTrade else ""}', GREEN)]
 
     def append_intrade(self, observation:np.ndarray) -> np.ndarray:
         return np.append(observation, 1.0 if self._inTrade else 0.0)
