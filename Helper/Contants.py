@@ -7,10 +7,6 @@ BLACK = (51, 51, 0)
 BOARD_BACKGROUND_COLOR = (25, 49, 94)
 
 # Display
-pygame.init()
-info = pygame.display.Info()
-# DISPLAY_X = info.current_w - 100 
-# DISPLAY_Y = info.current_h - 100
 DISPLAY_X = 1000
 DISPLAY_Y = 800
 DISPLAY_Y_GAP = (0, 0)    # Pixel to leave as gap from (bottom, top)

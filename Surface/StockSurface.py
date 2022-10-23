@@ -5,10 +5,7 @@ from typing import Tuple, List
 from ..Helper.Contants import *
 
 class StockSurface:
-    pygame.init()
-    pygame.font.init()
     Border_width = 2
-
     def reset(self) -> None:
         pygame.display.set_caption(self._caption)
         self._surface = pygame.display.set_mode((self._x_size, self._y_size))
@@ -19,6 +16,8 @@ class StockSurface:
         self._last_x_pos = 0
 
     def __init__(self, caption:str="Default", x_size:int=DISPLAY_X, y_size:int=DISPLAY_Y) -> None:
+        pygame.init()
+        pygame.font.init()
         # Setup the display
         self._caption = caption
         self._x_size = x_size
