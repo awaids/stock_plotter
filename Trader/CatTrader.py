@@ -5,7 +5,7 @@ from stock_plotter.Helper import Action
 from stock_plotter.Helper.Contants import *
 from stock_plotter.Helper.Functions import ss
 from stock_plotter.Surface import StockSurface
-from stock_plotter.Trader.RewardFunction import reward_winning_trades
+from stock_plotter.Trader.RewardFunction import *
 
 class CatTrader():
     image_size = 50
@@ -37,6 +37,45 @@ class CatTrader():
         self._death_at = self.initial_starting_capital * death_at 
         # Use the reset as intializing point for all the member variables
         self.reset()
+
+    # Useful properties
+    @property
+    def isDead(self) -> bool:
+        return self._isDead
+
+    @property
+    def current_capital(self) -> float:
+        return self._capital
+
+    @property
+    def death_at(self) -> float:
+        return self._death_at
+    
+    @property
+    def assets_holding(self) -> float:
+        return self._holding
+    
+    @property
+    def cum_profit(self) -> float:
+        return self._cum_profits
+
+    @property
+    def cum_losses(self) -> float:
+        return self._cum_losses
+
+    @property
+    def trades_done(self) -> int:
+        # Trade will only be done one buy and sell happens
+        return self._trades
+
+    @property
+    def unrealized_gains(self) -> float:
+        # Gains is profit or loss based on the bought price
+        return self._unrealized_gains
+    
+    @property 
+    def current_value(self) -> float:
+        return (self._holding * self._buy_price) + self._capital
 
     def draw(self, stockSurface:StockSurface, x_pos:int):
         assert(x_pos >= 0), "x_pos must be positive"
@@ -80,46 +119,8 @@ class CatTrader():
             (f'{"--IN TRADE--" if self._inTrade else ""}', GREEN)]
 
     def append_intrade(self, observation:np.ndarray) -> np.ndarray:
+        # Use this helper function to append the inTrade status of the trader to the observations
         return np.append(observation, 1.0 if self._inTrade else 0.0)
-
-    # Useful properties
-    @property
-    def isDead(self) -> bool:
-        return self._isDead
-
-    @property
-    def current_capital(self) -> float:
-        return self._capital
-
-    @property
-    def death_at(self) -> float:
-        return self._death_at
-    
-    @property
-    def assets_holding(self) -> float:
-        return self._holding
-    
-    @property
-    def cum_profit(self) -> float:
-        return self._cum_profits
-
-    @property
-    def cum_losses(self) -> float:
-        return self._cum_losses
-
-    @property
-    def trades_done(self) -> int:
-        # Trade will only be done one buy and sell happens
-        return self._trades
-
-    @property
-    def unrealized_gains(self) -> float:
-        # Gains is profit or loss based on the bought price
-        return self._unrealized_gains
-    
-    @property 
-    def current_value(self) -> float:
-        return (self._holding * self._buy_price) + self._capital
 
     def process(self, action:Action, close:float) -> Tuple[float, float]:
         # This will change the internal variables values
