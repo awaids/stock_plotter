@@ -122,11 +122,13 @@ class TestNNInputStockData:
         StockData.register_indicators([Dummy1])
         ref1 = StockData.prepare_input(df)
         # dump
-        StockData.dump(file=pathlib.Path('NNInputStockData.pkl'))
+        pkl_dump = pathlib.Path(__file__).parent / 'temp.pkl'
+        StockData.dump(file=pkl_dump)
         # load
-        obj = NNInputStockData.load(pathlib.Path('NNInputStockData.pkl'))
+        obj = NNInputStockData.load(pkl_dump)
         ref2 = obj.prepare_input(df)
         assert(np.allclose(ref1, ref2))
+        pkl_dump.unlink()
     
     def test_load_only(self):
         ''' Testing if we can load the NNInputStockData object and re-use it again '''
