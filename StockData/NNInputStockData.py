@@ -11,7 +11,7 @@ class NNInputStockData:
         to a NN for both training and inference '''
     Base_Columns = {'Open', 'Close', 'High', 'Low'}
 
-    def __init__(self, historical_period:int=100) -> None:
+    def __init__(self, historical_period:int=2) -> None:
         # Historical period means hows many older klines to ensure that some historical data is accounted for
         # when normalizhing and scaling
         self._indicators: Set[IndicatorBase] = set()

@@ -112,7 +112,7 @@ class TestNNInputStockData:
         StockData.register_indicators([BB24, EMA50])
         df = read_csv(csv = pathlib.Path(__file__).parent / 'BTCUSDT_1d.csv')
         observation = StockData.prepare_input(df)
-        ref = [0.43944644, 0.54003719, 0.64062794, -0.0170059, 0.64087909, -0.10542347, 0.03662134, -0.11008256]
+        ref = [0.66768131, 0.83384065, 1., -0.0170059, 1., -0.10542347, 0.03662134, -0.11008256]
         assert(np.allclose(observation, ref))
     
     def test_pickle_dump_and_load(self):
@@ -146,7 +146,6 @@ class TestNNInputStockData:
         # Min historical period must be 1
         NNInputStockData(historical_period=2)
 
-
     def test_historical_period_and_df_size(self):
         """ Test if the prepare input will work for the 0 historical data """
         StockData = NNInputStockData(historical_period=2)
@@ -161,10 +160,9 @@ class TestNNInputStockData:
             StockData.prepare_input(df=df.iloc[:1])
 
         # This must work!
-        ref = [-0.2,    0.125,  1.2,    0.5  ]
+        ref = [-0.2,    0.125,  1.2,    0.5]
         obs = StockData.prepare_input(df=df)
         assert(np.allclose(obs, ref))
-
 
 class Test_live_df:
     def test_with_live_data(self):
@@ -180,5 +178,5 @@ class Test_live_df:
                 continue
             obs = NNData.prepare_input(live_df)
             break
-        ref = np.array([0.24029928, 0.42507829, 0.6098573, 0.10261542, 0.77361277, -0.06021854, -0.09433811, -0.15163344])
+        ref =[0.449569, 0.7247845, 1., 0.05595948, 1.,0.03990123, 0.01160862, -0.00203652]
         assert(np.allclose(obs, ref))
