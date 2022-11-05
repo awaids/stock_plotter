@@ -1,6 +1,5 @@
 from __future__ import annotations
 from pathlib import Path
-from queue import Empty
 from .Indicators import IndicatorBase
 from typing import Set, List
 import pandas as pd
