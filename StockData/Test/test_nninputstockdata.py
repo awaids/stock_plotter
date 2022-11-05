@@ -139,6 +139,33 @@ class TestNNInputStockData:
         ref2 = obj.prepare_input(df)
         assert(np.allclose(ref1, ref2))
 
+    def test_histroical_required_period(self):
+        """ Test how the input will be prepared if incorrect historical period is set """
+        with pytest.raises(AssertionError):
+            NNInputStockData(historical_period=1)
+        # Min historical period must be 1
+        NNInputStockData(historical_period=2)
+
+
+    def test_historical_period_and_df_size(self):
+        """ Test if the prepare input will work for the 0 historical data """
+        StockData = NNInputStockData(historical_period=2)
+        df = read_csv(csv = pathlib.Path(__file__).parent / 'test_data.csv')
+        print(df)
+        assert(StockData.required_period == 2), "Required period must be 2"
+
+        # Setup next test with minimum df rows!
+        assert(df.shape[0] >= 2), "For this test df with minimun 2 rows are required"
+        # This must fail as minimum required period is 1
+        with pytest.raises(AssertionError):
+            StockData.prepare_input(df=df.iloc[:1])
+
+        # This must work!
+        ref = [-0.2,    0.125,  1.2,    0.5  ]
+        obs = StockData.prepare_input(df=df)
+        assert(np.allclose(obs, ref))
+
+
 class Test_live_df:
     def test_with_live_data(self):
         # Testing the NNInputStockData with live data, simulating how it will actually work 

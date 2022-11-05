@@ -15,6 +15,7 @@ class NNInputStockData:
         # Historical period means hows many older klines to ensure that some historical data is accounted for
         # when normalizhing and scaling
         self._indicators: Set[IndicatorBase] = set()
+        assert(historical_period >= 2), "historical_period must be greater than 2, required by pct_change!"
         self._historical_period = historical_period
 
     def register_indicator(self, indicator:IndicatorBase) -> None:
@@ -26,7 +27,7 @@ class NNInputStockData:
 
     def get_indicators_period(self) -> int:
         if not self._indicators:
-            return 1
+            return 0
         return max([ind.Period for ind in self._indicators])
 
     @property
@@ -59,7 +60,7 @@ class NNInputStockData:
             a single observation """
         # Asserts to ensure that the df can consume the df
         assert(self.required_cols.issubset(df.columns)), "Columns required by indicators not in df"
-        assert(df.shape[0] >= self.required_period + 1), "Dataframe size is less than max period of indicators"
+        assert(df.shape[0] >= self.required_period), "Dataframe size is less than max period of indicators"
 
         # Truncate the df to make processing slighlty less cumbersome
         new_df = df.iloc[-(self.required_period+1):].copy(deep=True)
