@@ -1,6 +1,6 @@
+from pathlib import Path
 from time import sleep
 from stock_plotter.Trader import CatTrader
-from os.path import dirname, join
 from typing import List
 from stock_plotter.Candle import CandleSticks
 from stock_plotter.Helper import Action
@@ -44,7 +44,7 @@ class TestCatTrader_StockDataDF_Integration:
 
     def _n_traders(self, traders: List[CatTrader]):
         
-        stockData = StockDataDF(read_csv(join(dirname(__file__), 'BTCUSDT_1d.csv'))[:100])
+        stockData = StockDataDF(read_csv(Path(__file__).parent / 'BTCUSDT_1d.csv')[:100])
         for df in stockData.df_generator():
             close = stockData.get_last_close(df)
             self.stockSurface.clear_display()

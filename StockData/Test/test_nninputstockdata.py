@@ -131,9 +131,9 @@ class TestNNInputStockData:
     def test_load_only(self):
         ''' Testing if we can load the NNInputStockData object and re-use it again '''
         df = read_csv(csv = pathlib.Path(__file__).parent / 'BTCUSDT_1d.csv')
-        ref1 = [-1.70059020e-02, 2.30333850e+04, -1.05423469e-01, 3.66213423e-02, -1.10082558e-01]
+        ref1 = [ 0.68596203,  0.84298102,  1.,-0.0170059, 1., -0.10542347, 0.03662134, -0.11008256, 0.28459118]
         # load
-        obj = NNInputStockData.load(pathlib.Path('test.pkl'))
+        obj = NNInputStockData.load(pathlib.Path(__file__).parent / 'nnInput.pickle')
         ref2 = obj.prepare_input(df)
         assert(np.allclose(ref1, ref2))
 
