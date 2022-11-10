@@ -42,6 +42,6 @@ class Action(enum.Enum):
 		elif action == 2:
 			return Action.BUY
 	
-	@classmethod
-	def get_actions_list(cls) -> List[str]:
+	@staticmethod
+	def get_actions_list() -> List[str]:
 		return ['SELL', 'HOLD', 'BUY']
