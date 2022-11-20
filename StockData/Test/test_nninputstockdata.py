@@ -5,19 +5,12 @@ import numpy as np
 from stock_plotter.StockData.DataReader import read_csv
 from stock_plotter.StockData.DataReader import StockDataDF
 from stock_plotter.StockData import IndicatorBase
-from stock_plotter.StockData import EMA50, BB24
+from stock_plotter.StockData import EMA50, BB24, CLOSE_v2, RSI14
 from stock_plotter.StockData import NNInputStockData
 from stock_plotter.StockData.Indicators import normalize
 
 
 TestDF = read_csv(csv = pathlib.Path(__file__).parent / 'test_data.csv')
-
-def test_normalize():
-    series = pd.Series([90, 91, 85, 99])
-    series = normalize(series)
-    ref = np.array([0.357143,0.428571,0,1])
-    assert(np.isclose(series.to_numpy(), ref, equal_nan=True).all())
-
 
 class Dummy1(IndicatorBase):
     Required_Columns = {'Close'}
@@ -104,16 +97,16 @@ class TestNNInputStockData:
         StockData = NNInputStockData()
         StockData.register_indicators([Dummy1, Dummy2])
         # Order is really important here!
-        assert(StockData.output_cols == ['Close', 'Dummy1', 'Dummy2', 'High', 'Low', 'Open']), "Order not kept"
+        assert(StockData.output_cols == ['Dummy1', 'Dummy2']), "Order not kept"
     
     def test_prepare_input(self):
         # Tests the complete input preparation by the class
         StockData = NNInputStockData()
         StockData.register_indicators([BB24, EMA50])
         df = read_csv(csv = pathlib.Path(__file__).parent / 'BTCUSDT_1d.csv')
-        observation = StockData.prepare_input(df)
-        ref = [0.66768131, 0.83384065, 1., -0.0170059, 1., -0.10542347, 0.03662134, -0.11008256]
-        assert(np.allclose(observation, ref))
+        obs = StockData.prepare_input(df)
+        ref = [0.66768131, 0.83384065, 1.0, 1.0]
+        assert(np.allclose(obs, ref))
     
     def test_pickle_dump_and_load(self):
         ''' Testing if we can dump the NNInputStockData object and re-use it again '''
@@ -133,11 +126,11 @@ class TestNNInputStockData:
     def test_load_only(self):
         ''' Testing if we can load the NNInputStockData object and re-use it again '''
         df = read_csv(csv = pathlib.Path(__file__).parent / 'BTCUSDT_1d.csv')
-        ref1 = [ 0.68596203,  0.84298102,  1.,-0.0170059, 1., -0.10542347, 0.03662134, -0.11008256, 0.28459118]
+        ref = [0.68596203, 0.84298102, 1.0, 1.0, 0.46056276]
         # load
         obj = NNInputStockData.load(pathlib.Path(__file__).parent / 'nnInput.pickle')
-        ref2 = obj.prepare_input(df)
-        assert(np.allclose(ref1, ref2))
+        obs = obj.prepare_input(df)
+        assert(np.allclose(ref, obs))
 
     def test_histroical_required_period(self):
         """ Test how the input will be prepared if incorrect historical period is set """
@@ -149,26 +142,14 @@ class TestNNInputStockData:
     def test_historical_period_and_df_size(self):
         """ Test if the prepare input will work for the 0 historical data """
         StockData = NNInputStockData(historical_period=2)
-        df = read_csv(csv = pathlib.Path(__file__).parent / 'test_data.csv')
-        print(df)
-        assert(StockData.required_period == 2), "Required period must be 2"
-
-        # Setup next test with minimum df rows!
-        assert(df.shape[0] >= 2), "For this test df with minimun 2 rows are required"
-        # This must fail as minimum required period is 1
-        with pytest.raises(AssertionError):
-            StockData.prepare_input(df=df.iloc[:1])
-
-        # This must work!
-        ref = [-0.2,    0.125,  1.2,    0.5]
-        obs = StockData.prepare_input(df=df)
-        assert(np.allclose(obs, ref))
+        StockData.register_indicators([CLOSE_v2])
+        assert(StockData.required_period == 4), "Required period must be 4"
 
 class Test_live_df:
     def test_with_live_data(self):
         # Testing the NNInputStockData with live data, simulating how it will actually work 
         NNData = NNInputStockData()
-        NNData.register_indicators([EMA50, BB24])
+        NNData.register_indicators([CLOSE_v2, RSI14])
 
         df = read_csv(csv = pathlib.Path(__file__).parent / 'BTCUSDT_1d.csv')
         StockData = StockDataDF(df, normalize=False)
@@ -178,5 +159,5 @@ class Test_live_df:
                 continue
             obs = NNData.prepare_input(live_df)
             break
-        ref =[0.449569, 0.7247845, 1., 0.05595948, 1.,0.03990123, 0.01160862, -0.00203652]
+        ref = [0.51669605, 0.44483227]
         assert(np.allclose(obs, ref))

@@ -37,6 +37,7 @@ class NNInputStockData:
 
     @property
     def required_cols(self) -> Set[str]:
+        """ Returns set of columns required to construct the input """
         cols = self.Base_Columns
         for ind in self._indicators:
             cols = cols | ind.Required_Columns
@@ -45,7 +46,7 @@ class NNInputStockData:
     @property
     def output_cols(self) -> List[str]:
         """ Sorted list of all the columns that the output will contain """
-        cols = list(self.Base_Columns)
+        cols = []
         for ind in self._indicators:
             cols = cols + ind().output_cols()
         return sorted(cols)
@@ -64,13 +65,11 @@ class NNInputStockData:
 
         # Truncate the df to make processing slighlty less cumbersome
         new_df = df.iloc[-(self.required_period+1):].copy(deep=True)
-        # Drop all columns that are not base columns
-        new_df.drop(columns=new_df.columns.difference(self.Base_Columns), inplace=True)
-        # Add the indicators values
         self.add_indicators_to_df(new_df)
-        for col in self.Base_Columns:
-            new_df[col] = new_df[col].pct_change()
         
+        # Drop cloumns that are not required
+        new_df.drop(columns=new_df.columns.difference(self.output_cols), inplace=True)
+
         # Sort the columns by name else we might get different orders!
         new_df = new_df.reindex(sorted(new_df.columns), axis=1)
         return new_df.iloc[-1].to_numpy()
