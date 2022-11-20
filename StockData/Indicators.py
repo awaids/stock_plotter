@@ -78,7 +78,7 @@ class RSI14(IndicatorBase):
         close = df['Close'].to_numpy()
         col = 'RSI14'
         # Substract 1 from the period as we still to get the last value
-        df[col] = ta.RSI(close, timeperiod=self.Period - 1)
+        df[col] = ta.RSI(close, timeperiod=self.Period - 1) / 100
 
 
 class BB24(IndicatorBase):

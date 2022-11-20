@@ -19,7 +19,7 @@ def test_RSI4():
     
     RSI14().add_indicator_col(df)
     rsi14 = df['RSI14'].to_numpy()
-    assert(np.isclose(rsi14[-1],41.21504347)), "The RSI14 values didnt match"
+    assert(np.isclose(rsi14[-1],0.4121504347)), "The RSI14 values didnt match"
 
 def test_BB24():
     df = read_csv(Path(__file__).parent / 'BTCUSDT_1d.csv')[:24]
