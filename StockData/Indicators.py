@@ -3,14 +3,14 @@ import numpy as np
 import talib as ta
 from typing import List
 from abc import ABC, abstractmethod
+from sklearn.preprocessing import MinMaxScaler
 
-def normalize(ap_array:np.ndarray, minV:float=None, maxV:float=None) -> np.ndarray:
-    if minV is None:
-        minV = np.nanmin(ap_array)
-    if maxV is None:
-        maxV = np.nanmax(ap_array)
-    # Scale between 0 - 1
-    return (ap_array - minV) / (maxV - minV)
+_scaler = MinMaxScaler(feature_range=(0, 1))
+def normalize(ap_array:np.ndarray) -> np.ndarray:
+    assert(not np.isnan(ap_array).all()), "An array will all NaN recieved for normalization"
+    # maintain shape to reset
+    return _scaler.fit_transform(ap_array.astype(float).reshape(-1, 1)).reshape(ap_array.shape)
+
 
 class IndicatorBase(ABC):
     ''' Required base class for indicators. This will ensure that we can easily add indicators
@@ -50,9 +50,26 @@ class EMA50(IndicatorBase):
         col = self.__class__.__name__
         ema = ta.EMA(close, timeperiod=self.Period)
         df[col] = normalize(ema)
-    
+
+
+class EMAvsClose(IndicatorBase):
+    _Periods = [25,50,100,150]
+    Period = max(_Periods)
+    Required_Columns = {'Close'}
+
+    def output_cols(self) -> List[str]:
+        return [f'ema{period}vsClose' for period in self._Periods]
+
+    def _compute(self, df:pd.DataFrame):
+        close = df['Close'].to_numpy()
+        for period in self._Periods:
+            ema = ta.EMA(close, timeperiod=period)
+            df[f'ema{period}vsClose'] = np.where(close > ema, 1.0, 0.0)
+
+        
+
 class RSI14(IndicatorBase):
-    Period = 14
+    Period = 14 + 1 # +1 is required here as 14 we get all NaNs
     Required_Columns = {'Close'}
     def output_cols(self) -> List[str]:
         return ['RSI14']
@@ -60,10 +77,12 @@ class RSI14(IndicatorBase):
     def _compute(self, df:pd.DataFrame):
         close = df['Close'].to_numpy()
         col = 'RSI14'
-        rsi = ta.RSI(close, timeperiod=self.Period)
-        df[col] = normalize(rsi)
+        # Substract 1 from the period as we still to get the last value
+        df[col] = ta.RSI(close, timeperiod=self.Period - 1)
+
 
 class BB24(IndicatorBase):
+    # I dont like this one, as this once normalizes will not make any sense as BB bands are always 2 STD above and below!
     Period = 24
     Required_Columns = {'Close'}
     def output_cols(self) -> List[str]:
@@ -76,11 +95,39 @@ class BB24(IndicatorBase):
     def _compute(self, df:pd.DataFrame):
         close = df['Close'].to_numpy()
         u, m, l = ta.BBANDS(close, timeperiod=self.Period, nbdevup=2, nbdevdn=2, matype=0)
-        # Normlaizing them differently
-        maxV = max([np.nanmax(a) for a in [u,m,l]])
-        minV = min([np.nanmin(a) for a in [u,m,l]])
+        u, m, l = normalize(np.vstack((u,m,l)))
 
         # Assigning to df
-        df[f'{self.__class__.__name__}Lower'] = normalize(l, minV=minV, maxV=maxV)
-        df[f'{self.__class__.__name__}Middle'] = normalize(m, minV=minV, maxV=maxV)
-        df[f'{self.__class__.__name__}Upper'] = normalize(u, minV=minV, maxV=maxV)
+        df[f'{self.__class__.__name__}Lower'] = l
+        df[f'{self.__class__.__name__}Middle'] = m
+        df[f'{self.__class__.__name__}Upper'] = u
+
+
+class BB24Squeeze(IndicatorBase):
+    # Indicator to determine the current squeeze of the BBband
+    Period = 24
+    Required_Columns = {'Close'}
+    def output_cols(self) -> List[str]:
+        return ['BB24Squeeze']
+
+    def _compute(self, df:pd.DataFrame):
+        close = df['Close'].to_numpy()
+        u, _, l = ta.BBANDS(close, timeperiod=self.Period, nbdevup=2, nbdevdn=2, matype=0)
+        df['BB24Squeeze'] = normalize(u - l)
+
+
+class PctChange_Scaler(IndicatorBase):
+    """ Base class for pct change and scaling between 0.0 - 1.0 """
+    Period = 2  # Period required here is 3. Once for pct change and one for normalization
+    def _compute(self, df:pd.DataFrame):
+        for col in self.Required_Columns:
+            new_col = df[col].pct_change()
+            df[f'{col}_v2'] = normalize(new_col.to_numpy())
+    
+    def output_cols(self) -> List[str]:
+        """ Returns a list of cols that this indicator will append to the df """
+        return [f'{col}_v2' for col in self.Required_Columns]
+
+
+class CLOSE_v2(PctChange_Scaler):
+    Required_Columns = {'Close'}
