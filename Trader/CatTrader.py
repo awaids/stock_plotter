@@ -125,11 +125,9 @@ class CatTrader():
     def process(self, action:Action, close:float) -> Tuple[float, float]:
         # This will change the internal variables values
         assert(close != 0.0), "Close values cannot be 0"
-        rewardTemp, rewardFinal = reward_winning_trades(
-            action=action, close=close, inTrade=self._inTrade, buyPrice=self._buy_price)
+        rewardTemp, rewardFinal = reward_winning_trades(action=action, close=close, inTrade=self._inTrade, buyPrice=self._buy_price)
         self.update_state(action, close)
         return rewardTemp, rewardFinal
-
 
     def update_state(self, action:Action, close:float) -> None:
         if self.isDead:
@@ -149,9 +147,6 @@ class CatTrader():
             # Only update the unrealized gains if in trade
             if self._inTrade:
                 self._unrealized_gains =  (close - self._buy_price) * self._holding
-            # Configure unrealized loss death
-            if (self.current_value + self._unrealized_gains) < self._death_at:
-                self._isDead = True
         elif action == Action.SELL:
             # Only sell when already in trade
             if self._inTrade:
@@ -169,8 +164,9 @@ class CatTrader():
                 self._unrealized_gains = 0.0
                 self._inTrade = False
 
-                if self._capital < self._death_at:
-                    self._isDead = True
-
                 #Increment trade
                 self._trades += 1
+
+        # Configure death based on unrealized loss or current value
+        if (self.current_value + self._unrealized_gains) < self._death_at:
+            self._isDead = True
